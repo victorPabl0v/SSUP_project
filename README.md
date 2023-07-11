@@ -1,2 +1,2 @@
 # SSYP_project
-arduino games with wifi connection
+Arduino games with Wi-Fi connection. 
