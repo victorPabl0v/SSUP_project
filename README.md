@@ -1,2 +1,2 @@
-# SSUP_project
+# SSYP_project
 arduino games with wifi connection
