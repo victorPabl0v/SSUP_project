@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Direction Buttons</title>
+</head>
+<style>
+    .button {
+        background-color: #F32D4C;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    body {
+        background: #f57e39;
+        display: flex;
+        justify-content: center;
+    }
+
+    .all {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        padding-bottom: 100px;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .button {
+        margin: 0;
+        width: 200px;
+        height: 60px;
+        justify-items: space-between;
+    }
+
+    .vertical {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 200px;
+        padding: 40px;
+    }
+
+    .allSquares {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 1000px;
+        /* flex-wrap: wrap; */
+        /* flex-flow: row wrap; */
+    }
+
+    .squares {
+        display: flex;
+        background: #00D8AE;
+    }
+
+    .mainSquare {
+        margin: 0px;
+        display: flex;
+        height: 40px;
+        width: 40px;
+        margin: 2px;
+        background: rgb(44, 105, 25);
+        justify-content: center;
+        align-items: center;
+        border-radius: 35px;
+    }
+
+    .cell {
+        display: flex;
+        height: 35px;
+        width: 35px;
+        visibility: hidden;
+        background: green;
+    }
+</style>
+
+<body>
+    <div class="all">
+        <div class="buttons">
+            <button id="left" class="button">Left</button>
+            <div class="vertical">
+                <button id="up" class="button">Up</button>
+                <button id="down" class="button">Down</button>
+            </div>
+            <button id="right" class="button">Right</button>
+        </div>
+        <div id="allSquares" class="allSquares">
+        </div>
+    </div>
+</body>
+<script language="JavaScript">
+
+    const u = document.getElementById("left");
+    const f = function () {
+        alert("left");
+    };
+
+    u.addEventListener("click", f);
+    document.getElementById("up").addEventListener("click", function () {
+        alert("up");
+    });
+    document.getElementById("down").addEventListener("click", function () {
+        alert("down");
+    });
+    document.getElementById("right").addEventListener("click", function (e) {
+        alert("right")
+        console.log(e);
+    });
+
+
+
+    const allSquares = document.getElementById("allSquares")
+    const squares = document.getElementById("squares");
+    const mainSquare = document.getElementById("mainSquare");
+    console.log(squares, "asdsdfsdf");
+    const size = 16;
+
+    // div.className = "mainSquare";
+
+
+    for (let j = 0; j < size; j++) {
+        let div2 = document.createElement("div")
+        div2.id = "squares";
+        div2.className = "squares";
+        allSquares.appendChild(div2)
+        for (let i = 0; i < size; i++) {
+            let div = document.createElement("div");
+            div.id = `${i + j * 16}`;
+            div.className = "mainSquare";
+            div.style.background = "green";
+            div2.appendChild(div);
+            // let div1 = document.createElement("img");
+            // div1.className = "green-frog";
+            // div1.src = "C:\Users\ssyp\Desktop\VS Progs\green-frog";
+            // div1.appendChild(div2);
+        }
+    }
+    // div.appendChild(...)
+
+    const colorPointedSavedPlot = "rgb(19, 164, 198)";
+    const data = {
+        x: 0,
+        y: 0,
+        pole: Array.from({ length: size }, () => Array.from({ length: size }, () => {
+            return `green`;
+        }))
+    };
+
+    data.pole[0][0] = "red";
+    display();
+
+    function KeyChecker(e) {
+        let prevX = data.x;
+        let prevY = data.y;
+        if (e.code === "KeyW" || e.code === "ArrowUp") {
+            console.log(e);
+            data.y -= 1;
+            if (data.y === -1) {
+                data.y = 15;
+            }
+            ColoringThePlot(prevX, prevY);
+        } else if (e.code === "KeyD" || e.code === "ArrowRight") {
+            console.log(e);
+            data.x += 1;
+            if (data.x === 16) {
+                data.x = 0;
+            }
+            ColoringThePlot(prevX, prevY);
+        } else if (e.code === "KeyS" || e.code === "ArrowDown") {
+            console.log(e);
+            data.y += 1;
+            if (data.y === 16) {
+                data.y = 0;
+            }
+            ColoringThePlot(prevX, prevY);
+        } else if (e.code === "KeyA" || e.code === "ArrowLeft") {
+            console.log(e);
+            data.x -= 1;
+            if (data.x === -1) {
+                data.x = 15;
+            }
+            ColoringThePlot(prevX, prevY);
+        }
+        if (e.code === "Space") {
+            colorCancelSave()
+        }
+        display();
+    }
+
+
+
+    console.log(data);
+
+    function ColoringThePlot(prevX, prevY) {
+        if (data.pole[prevY][prevX] === colorPointedSavedPlot) {
+            data.pole[prevY][prevX] = "blue";
+        } else if (data.pole[prevY][prevX] != "blue") {
+            data.pole[prevY][prevX] = "green";
+        }
+        if (data.pole[data.y][data.x] === "blue") {
+            data.pole[data.y][data.x] = colorPointedSavedPlot;
+        } else {
+            data.pole[data.y][data.x] = "red";
+        }
+    }
+
+    function colorCancelSave() {
+        if (data.pole[data.y][data.x] === colorPointedSavedPlot) {
+            data.pole[data.y][data.x] = "green";
+        } else {
+            data.pole[data.y][data.x] = "blue";
+        }
+    }
+
+    function idFromXY(x, y) {
+        return `${x + y * 16}`;
+    }
+
+    function display() {
+        for (let j = 0; j < size; j++) {
+            for (let i = 0; i < size; i++) {
+                let plot = document.getElementById(idFromXY(i, j))
+                plot.style.background = data.pole[j][i]
+            }
+        }
+    }
+
+    window.addEventListener("keydown", function (e) {
+        KeyChecker(e, data.x, data.y)
+    });
+
+
+</script>
+
+</html>
