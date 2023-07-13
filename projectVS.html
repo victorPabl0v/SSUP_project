@@ -1,23 +1,33 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Подключение встроенных стилей</title>
 </head>
 
 <style type="text/css">
-   body {
-    background: #ccccff; /* цвет фона страницы */
-   }
-   p {
-    color: red; /* цвет текста параграфов */
-    font-family: Helvetica, sans-serif; /* гарнитура шрифта параграфов */
-    font-size: 150%; /* размер шрифта */
-    text-align: center; /* текст по центру */
-    border: 5px green double; /* стили рамки */
-   }
+    body {
+        background: #ccccff;
+        /* цвет фона страницы */
+    }
+
+    p {
+        color: red;
+        /* цвет текста параграфов */
+        font-family: Helvetica, sans-serif;
+        /* гарнитура шрифта параграфов */
+        font-size: 150%;
+        /* размер шрифта */
+        text-align: center;
+        /* текст по центру */
+        border: 5px green double;
+        /* стили рамки */
+    }
+
     .button {
-        background-color: #4CAF50; /* Green */
+        background-color: #4CAF50;
+        /* Green */
         border: none;
         color: white;
         padding: 15px 32px;
@@ -26,62 +36,79 @@
         display: inline-block;
         font-size: 16px;
     }
+
     .flex-container {
-      display: flex;
-      justify-content: center;
+        display: flex;
+        justify-content: center;
     }
+
     .flex-container1 {
-      display: flex;
-      justify-content: space-around;
+        display: flex;
+        justify-content: space-around;
     }
 </style>
+
 <body>
-<div class="flex-container">
-    <div><button id="up" class="button">Up</button></div>
-</div>
-<div class="flex-container1">
-    <div><button id="left" class="button">Left</button></div>
-    <div><button id="right" class="button">Right</button></div>
-</div>
-<div class="flex-container">
-    <div><button id="down" class="button">Down</button></div>
-</div>
+    <div class="flex-container">
+        <div><button id="up" class="button">Up</button></div>
+    </div>
+    <div class="flex-container1">
+        <div><button id="left" class="button">Left</button></div>
+        <div><button id="right" class="button">Right</button></div>
+    </div>
+    <div class="flex-container">
+        <div><button id="down" class="button">Down</button></div>
+    </div>
+    <div class="flex-container">
+        <div><button id="Change_mode" class="button">Change mode</button></div>
+    </div>
 </body>
 
 <script language="JavaScript">
     const url = 'http://192.168.1.1'
-    document.getElementById("up").addEventListener("click", function(){
+    let modeNum = 0
+    document.getElementById("up").addEventListener("click", function () {
         fetchAsyncToDos(url + "/ledUpon");
     });
-    document.getElementById("left").addEventListener("click", function(){
+    document.getElementById("left").addEventListener("click", function () {
         fetchAsyncToDos(url + "/ledLefton");
     });
-    document.getElementById("right").addEventListener("click", function(){
+    document.getElementById("right").addEventListener("click", function () {
         fetchAsyncToDos(url + "/ledRighton");
     });
-    document.getElementById("down").addEventListener("click", function(){
+    document.getElementById("down").addEventListener("click", function () {
         fetchAsyncToDos(url + "/ledDownon");
     });
 
-    function fetchAsyncToDos(url){
+    document.getElementById("Change_mode").addEventListener("click", function () {
+        fetchAsyncToDos(url + "/ledChange_mode", { 'mode': modeNum });
+        modeNum = (modeNum + 1) % 2;
+    });
+
+    function fetchAsyncToDos(url, body) {
         console.log('started...')
-        const response = fetch(url,{mode: "no-cors"}).then((data) => {
+        const response = fetch(url, {
+            mode: "no-cors", method: "POST", body: JSON.stringify(body)
+        }).then((data) => {
             console.log(data);
         })
+
     }
+
 
     document.addEventListener("keydown", checkKeyPressed, false);
 
     function checkKeyPressed(e) {
         if (e.code == 'KeyW' || e.code == 'ArrowUp') {
             fetchAsyncToDos(url + "/ledUpon");
-        } else if (e.code === 'KeyA' || e.code === 'ArrowLeft'){
+        } else if (e.code === 'KeyA' || e.code === 'ArrowLeft') {
             fetchAsyncToDos(url + "/ledLefton");
-        } else if (e.code === 'KeyS' || e.code === 'ArrowDown'){
+        } else if (e.code === 'KeyS' || e.code === 'ArrowDown') {
             fetchAsyncToDos(url + "/ledDownon");
-        } else if (e.code === "KeyD" || e.code === "ArrowRight"){
+        } else if (e.code === "KeyD" || e.code === "ArrowRight") {
             fetchAsyncToDos(url + "/ledRighton");
         }
     }
 </script>
+
 </html>
