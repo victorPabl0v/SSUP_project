@@ -299,7 +299,6 @@ changer.addEventListener("change", () => {
             inp.addEventListener("input", (e) => {
                 val.textContent = e.target.value;
                 let num = parseInt(e.target.value)
-                fetchAsyncToDos(url + "/ledNoise", { "field": num})
             });
         }
     }   
