@@ -241,6 +241,11 @@ function whatMode() {
         return 1;
     }
 }
+
+function slMode(mode, num) {
+    fetchAsyncToDos(url + "/ledNoise", {mode: num})
+}
+
 // function modeFetch() {
 //     if selValue === "snake" {
 //         let
