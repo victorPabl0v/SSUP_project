@@ -47,6 +47,11 @@ File fsUploadFile;
 const uint8_t kMatrixWidth = 16;
 const uint8_t kMatrixHeight = 16;
 
+File fsUploadFile;
+
+bool handleFileRead(String path);
+void handleFileUpload();
+
 #define kMatrixSerpentineLayout true
 
 uint32_t x_noise, y_noise, v_time, hue_time, hxy;
@@ -314,7 +319,22 @@ void setup()
 
   server.on("/ledNetworkColoring", handle_ledNetworkColoring);
 
-  server.begin();
+  server.on("/upload", HTTP_GET, []()
+            { server.send(200, "text/html", "<!DOCTYPE html><html><head> <meta http-equiv='Content-Type' content='text/html; charset=utf-8'> <title>Загрузка</title></head><body> <form method='post' enctype='multipart/form-data'><input type='file' name='name'><input class='button' type='submit'  value='Upload'></form></body></html>"); });
+
+  server.on(
+      "/upload", HTTP_POST, // if the client posts to the upload page
+      []()
+      { server.send(200); }, // Send status 200 (OK) to tell the client we are ready to receive
+      handleFileUpload       // Receive and save the file
+  );
+
+  server.onNotFound([]() {                   // If the client requests any URI
+          if (!handleFileRead(server.uri())) // send it if it exists
+            server.send(404, "text/plain", "404: Not Found");
+        });
+
+      server.begin();
 }
 
 int cordsTransformation(int x, int y)
@@ -496,4 +516,60 @@ void handle_ledChangeMode()
     display();
   }
   ok();
+}
+
+bool handleFileRead(String path)
+{ // send the right file to the client (if it exists)
+  Serial.println("handleFileRead: " + path);
+  if (path.endsWith("/"))
+    path += "index.html"; // If a folder is requested, send the index file
+  String contentType = "";
+  String pathWithGz = path + ".gz";
+  if (SPIFFS.exists(pathWithGz) || SPIFFS.exists(path))
+  {                                                     // If the file exists, either as a compressed archive, or normal
+    if (SPIFFS.exists(pathWithGz))                      // If there's a compressed version available
+      path += ".gz";                                    // Use the compressed verion
+    File file = SPIFFS.open(path, "r");                 // Open the file
+    size_t sent = server.streamFile(file, contentType); // Send it to the client
+    file.close();
+    Serial.println(String("\tSent file: ") + path);
+    return true;
+  }
+  Serial.println(String("\tFile Not Found: ") + path);
+  return false;
+}
+
+void handleFileUpload()
+{
+  HTTPUpload &upload = server.upload();
+  if (upload.status == UPLOAD_FILE_START)
+  {
+    String filename = upload.filename;
+    if (!filename.startsWith("/"))
+      filename = "/" + filename;
+    Serial.print("handleFileUpload Name: ");
+    Serial.println(filename);
+    fsUploadFile = SPIFFS.open(filename, "w");
+    filename = String();
+  }
+  else if (upload.status == UPLOAD_FILE_WRITE)
+  {
+    if (fsUploadFile)
+      fsUploadFile.write(upload.buf, upload.currentSize);
+  }
+  else if (upload.status == UPLOAD_FILE_END)
+  {
+    if (fsUploadFile)
+    {
+      fsUploadFile.close();
+      Serial.print("handleFileUpload Size: ");
+      Serial.println(upload.totalSize);
+      server.sendHeader("Location", "/success.html");
+      server.send(303);
+    }
+    else
+    {
+      server.send(500, "text/plain", "500: couldn't create file");
+    }
+  }
 }
