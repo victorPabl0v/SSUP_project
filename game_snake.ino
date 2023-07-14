@@ -42,8 +42,6 @@ IPAddress subnet(255, 255, 255, 0);
 
 ESP8266WebServer server(80);
 
-File fsUploadFile;
-
 const uint8_t kMatrixWidth = 16;
 const uint8_t kMatrixHeight = 16;
 
