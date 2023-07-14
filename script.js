@@ -293,7 +293,8 @@ changer.addEventListener("change", () => {
             val.textContent = inp.value;
             inp.addEventListener("input", (e) => {
                 val.textContent = e.target.value;
-                fetchAsyncToDos(url + "/ledNoise", { "mode": })
+                let num = parseInt(e.target.value)
+                fetchAsyncToDos(url + "/ledNoise", { "field": num})
             });
         }
     }   
