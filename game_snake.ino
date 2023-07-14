@@ -4,6 +4,8 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
+#include <ArduinoOTA.h>
+#include <FS.h>
 
 #define COLOR_ORDER GRB
 #define CHIPSET WS2811
@@ -39,6 +41,8 @@ IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 
 ESP8266WebServer server(80);
+
+File fsUploadFile;
 
 const uint8_t kMatrixWidth = 16;
 const uint8_t kMatrixHeight = 16;
@@ -266,7 +270,7 @@ void noise()
 void setup()
 {
   Serial.begin(9600);
-  initSnake();
+
   FastLED.setBrightness(BRIGHTNESS);
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   // Upping WiFi server
@@ -274,6 +278,27 @@ void setup()
   WiFi.softAPConfig(local_ip, gateway, subnet);
   WiFi.persistent(false);
   delay(100);
+  initSnake();
+
+  ArduinoOTA.setHostname("matrix");
+
+  ArduinoOTA.onStart([]()
+                     { Serial.println("Start"); });
+  ArduinoOTA.onEnd([]()
+                   { Serial.println("\nEnd"); });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total)
+                        { Serial.printf("Progress: %u%%\r", (progress / (total / 100))); });
+  ArduinoOTA.onError([](ota_error_t error)
+                     {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed"); });
+  ArduinoOTA.begin();
+
+  Serial.println("OTA ready");
 
   server.on("/ledUpon", handle_ledUpon);
 
@@ -286,6 +311,8 @@ void setup()
   server.on("/ledChange_mode", handle_ledChangeMode);
 
   server.on("/ledChangeMode", handle_ledChangeMode);
+
+  server.on("/ledNetworkColoring", handle_ledNetworkColoring);
 
   server.begin();
 }
@@ -352,11 +379,12 @@ void printArray()
 void loop()
 {
   server.handleClient();
+  ArduinoOTA.handle();
   if (type == 1)
   {
     noise();
   }
-  else if (type)
+  else if (type == 0)
   {
     snake();
   }
@@ -365,6 +393,28 @@ void loop()
 void ok()
 {
   server.send(200, "text/html", "ok");
+}
+
+void clearDisplay()
+{
+  for (int i = 0; i <= 255; i++)
+  {
+    leds[i] = CRGB::Black;
+  }
+}
+
+void handle_ledNoise()
+{
+  deserializeJson(doc, server.arg("plain"));
+  octaves = doc["octaves"].as<uint8_t>();
+  hue_octaves = doc["hue_octaves"].as<uint8_t>();
+  hue_speed = doc["hue_speed"].as<uint8_t>();
+  time_speed = doc["time_speed"].as<uint16_t>();
+  xscale = doc["xscale"].as<uint32_t>();
+  yscale = doc["yscale"].as<uint32_t>();
+  hue_scale = doc["hue_scale"].as<uint16_t>();
+  x_speed = doc["x_speed"].as<uint16_t>();
+  y_speed = doc["y_speed"].as<uint16_t>();
 }
 
 void handle_ledUpon()
@@ -414,31 +464,36 @@ void handle_ledNetworkColoring()
   deserializeJson(doc, server.arg("plain"));
   auto xCords = doc["xCords"].as<uint8_t>();
   auto yCords = doc["yCords"].as<uint8_t>();
+  auto colorR = doc["r"].as<uint8_t>();
+  auto colorG = doc["g"].as<uint8_t>();
+  auto colorB = doc["b"].as<uint8_t>();
   uint8_t n1 = cordsTransformation(xCords, yCords);
-  leds[n1] = CRGB::Green;
+  leds[n1] = CRGB(colorR, colorG, colorB);
   FastLED.show();
 }
 
 void handle_ledChangeMode()
 {
   deserializeJson(doc, server.arg("plain"));
-  auto modeType = doc["body"].as<uint8_t>();
-  if (modeType == 1)
+  auto modeType = doc["mode"].as<uint8_t>();
+  if (modeType == 0)
   {
     type = 0;
     resetDisplay();
     initSnake();
     timing = millis();
   }
-  else if (modeType == 0)
+  else if (modeType == 1)
   {
     type = 1;
     resetDisplay();
+    display();
   }
   else
   {
     type = 2;
     resetDisplay();
+    display();
   }
   ok();
 }
