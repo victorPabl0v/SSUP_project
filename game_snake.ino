@@ -11,7 +11,7 @@
 #define COLOR_ORDER GRB
 #define CHIPSET WS2811
 #define NUM_LEDS 256
-#define BRIGHTNESS 25
+#define BRIGHTNESS 255
 #define LED_PIN 12
 #define arraySize 16
 #define kMatrixSerpentineLayout true
@@ -31,7 +31,7 @@ int x = 0;
 int a[arraySize][arraySize] = {0};
 
 byte direction = 0;
-uint8_t type = 0; // 0 right    1 up
+uint8_t type = 0;
 int snake_size = 4;
 
 const char *ssid = "MATRIX";
@@ -204,6 +204,12 @@ void spawnHead()
   {
     decreaseCells();
     snake_size -= 1;
+    if (snake_size <= 0)
+    {
+      resetDisplay();
+      initSnake();
+      clearDisplay();
+    }
   }
   a[x][y] = snake_size;
 }
@@ -255,6 +261,11 @@ void snake()
     }
     display();
     FastLED.show();
+  }
+  if (millis() - timing >= 10000)
+  {
+    resetDisplay();
+    delay(100);
   }
 }
 
@@ -315,6 +326,8 @@ void setup()
 
   server.on("/ledRighton", handle_ledRighton);
 
+  server.on("/ledNoise", handle_ledNoise);
+
   server.on("/ledLefton", handle_ledLefton);
 
   server.on("/ledChange_mode", handle_ledChangeMode);
@@ -333,12 +346,12 @@ void setup()
       handleFileUpload       // Receive and save the file
   );
 
-  server.onNotFound([]() {                   // If the client requests any URI
-          if (!handleFileRead(server.uri())) // send it if it exists
-            server.send(404, "text/plain", "404: Not Found");
-        });
+  server.onNotFound([]() {             // If the client requests any URI
+    if (!handleFileRead(server.uri())) // send it if it exists
+      server.send(404, "text/plain", "404: Not Found");
+  });
 
-      server.begin();
+  server.begin();
 }
 
 int cordsTransformation(int x, int y)
@@ -405,13 +418,14 @@ void loop()
   MDNS.update();
   server.handleClient();
   ArduinoOTA.handle();
-  if (type == 1)
-  {
-    noise();
-  }
-  else if (type == 0)
+
+  if (type == 0)
   {
     snake();
+  }
+  else if (type == 2)
+  {
+    noise();
   }
 }
 
@@ -426,6 +440,7 @@ void clearDisplay()
   {
     leds[i] = CRGB::Black;
   }
+  FastLED.show();
 }
 
 void handle_ledNoise()
@@ -445,10 +460,9 @@ void handle_ledNoise()
 void handle_ledUpon()
 {
 
-  deserializeJson(doc, server.arg("plain"));
-  if (direction != 2 && direction != 4)
+  if (direction != 3 && direction != 4)
   {
-    direction = 1;
+    direction = 0;
     server.send(200, "text/html", "ok");
   }
 
@@ -457,18 +471,18 @@ void handle_ledUpon()
 
 void handle_ledDownon()
 {
-  if (direction != 1 && direction != 4)
+  if (direction != 0 && direction != 4)
   {
-    direction = 2;
+    direction = 3;
   }
   ok();
 }
 
 void handle_ledRighton()
 {
-  if (direction != 3 && direction != 4)
+  if (direction != 1 && direction != 4)
   {
-    direction = 0;
+    direction = 2;
     server.send(200, "text/html", "ok");
   }
   ok();
@@ -476,9 +490,9 @@ void handle_ledRighton()
 
 void handle_ledLefton()
 {
-  if (direction != 0 && direction != 4)
+  if (direction != 2 && direction != 4)
   {
-    direction = 3;
+    direction = 1;
     server.send(200, "text/html", "ok");
   }
   ok();
@@ -493,8 +507,9 @@ void handle_ledNetworkColoring()
   auto colorG = doc["g"].as<uint8_t>();
   auto colorB = doc["b"].as<uint8_t>();
   uint8_t n1 = cordsTransformation(xCords, yCords);
-  leds[n1] = CRGB(colorR, colorG, colorB);
+  leds[n1].setRGB(colorR, colorG, colorB);
   FastLED.show();
+  ok();
 }
 
 void handle_ledChangeMode()
@@ -513,12 +528,14 @@ void handle_ledChangeMode()
     type = 1;
     resetDisplay();
     display();
+    clearDisplay();
   }
   else
   {
     type = 2;
     resetDisplay();
     display();
+    clearDisplay();
   }
   ok();
 }
