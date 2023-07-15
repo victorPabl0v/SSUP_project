@@ -415,7 +415,6 @@ void printArray()
 
 void loop()
 {
-  MDNS.update();
   server.handleClient();
   ArduinoOTA.handle();
 
@@ -446,15 +445,16 @@ void clearDisplay()
 void handle_ledNoise()
 {
   deserializeJson(doc, server.arg("plain"));
-  octaves = doc["octaves"].as<uint8_t>();
-  hue_octaves = doc["hue_octaves"].as<uint8_t>();
-  hue_speed = doc["hue_speed"].as<uint8_t>();
-  time_speed = doc["time_speed"].as<uint16_t>();
-  xscale = doc["xscale"].as<uint32_t>();
-  yscale = doc["yscale"].as<uint32_t>();
-  hue_scale = doc["hue_scale"].as<uint16_t>();
-  x_speed = doc["x_speed"].as<uint16_t>();
-  y_speed = doc["y_speed"].as<uint16_t>();
+  if(doc["octaves"]) { octaves = doc["octaves"].as<uint8_t>(); }
+  if(doc["hue_octaves"]) { hue_octaves = doc["hue_octaves"].as<uint8_t>(); }
+  if(doc["hue_speed"]) { hue_speed = doc["hue_speed"].as<uint8_t>(); }
+  if(doc["time_speed"]) { time_speed = doc["time_speed"].as<uint16_t>(); }
+  if(doc["xscale"]) { xscale = doc["xscale"].as<uint32_t>(); }
+  if(doc["yscale"]) { yscale = doc["yscale"].as<uint32_t>(); }
+  if(doc["hue_scale"]) { hue_scale = doc["hue_scale"].as<uint16_t>(); }
+  if(doc["x_speed"]) { x_speed = doc["x_speed"].as<uint16_t>(); }
+  if(doc["y_speed"]) { y_speed = doc["y_speed"].as<uint16_t>(); }
+  ok();
 }
 
 void handle_ledUpon()
@@ -503,11 +503,13 @@ void handle_ledNetworkColoring()
   deserializeJson(doc, server.arg("plain"));
   auto xCords = doc["xCords"].as<uint8_t>();
   auto yCords = doc["yCords"].as<uint8_t>();
-  auto colorR = doc["r"].as<uint8_t>();
-  auto colorG = doc["g"].as<uint8_t>();
-  auto colorB = doc["b"].as<uint8_t>();
+  auto r = doc["r"].as<uint8_t>();
+  auto g = doc["g"].as<uint8_t>();
+  auto b = doc["b"].as<uint8_t>();
   uint8_t n1 = cordsTransformation(xCords, yCords);
-  leds[n1].setRGB(colorR, colorG, colorB);
+  leds[n1].r = r;
+  leds[n1].g = g;
+  leds[n1].b = b;
   FastLED.show();
   ok();
 }

@@ -124,7 +124,8 @@ function element(wh, he, backgr, i, j) {
     divAaa.style.width = wh
     divAaa.style.height = he
     divAaa.style.background = backgr
-    divAaa.style.margin = "4px"
+    divAaa.style.margin = "4px";
+    divAaa.style.cursor = 'pointer';
     divAaa.id = `${i}|${j}`;
     divAaa.addEventListener("click", function (e) {
         const coords = e.target.id.split('|');
@@ -178,7 +179,7 @@ export function drawRisovalkaa() {
     for (let t = 0; t < 16; t++) {
         document.getElementById("pole").appendChild(stroka(t))
     }
-    
+
     knopkiplus()
     knopkiminus()
 }
