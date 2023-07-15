@@ -6,6 +6,7 @@
 #include <ArduinoJson.h>
 #include <ArduinoOTA.h>
 #include <FS.h>
+#include <ESP8266mDNS.h>
 
 #define COLOR_ORDER GRB
 #define CHIPSET WS2811
@@ -33,8 +34,9 @@ byte direction = 0;
 uint8_t type = 0; // 0 right    1 up
 int snake_size = 4;
 
-const char *ssid = "snakeESP8266";
-const char *password = "qwerty123";
+const char *ssid = "MATRIX";
+const char *password = "ssyp2023";
+const char *mdnsName = "matrix";
 
 IPAddress local_ip(192, 168, 1, 1);
 IPAddress gateway(192, 168, 1, 1);
@@ -303,6 +305,10 @@ void setup()
 
   Serial.println("OTA ready");
 
+  SPIFFS.begin();
+
+  MDNS.begin(mdnsName);
+
   server.on("/ledUpon", handle_ledUpon);
 
   server.on("/ledDownon", handle_ledDownon);
@@ -396,6 +402,7 @@ void printArray()
 
 void loop()
 {
+  MDNS.update();
   server.handleClient();
   ArduinoOTA.handle();
   if (type == 1)
@@ -562,7 +569,7 @@ void handleFileUpload()
       fsUploadFile.close();
       Serial.print("handleFileUpload Size: ");
       Serial.println(upload.totalSize);
-      server.sendHeader("Location", "/success.html");
+      server.sendHeader("Location", "/");
       server.send(303);
     }
     else
