@@ -46,6 +46,37 @@ select {
     padding-bottom: 100px;
 }
 
+.stroka {
+    display: flex;
+    flex-wrap: wrap
+}
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.disp {
+    font-size: 66px;
+
+}
+
+.r {
+    background: red;
+    border-radius: 20px;
+}
+
+.g {
+    background: green;
+    border-radius: 20px;
+}
+
+.b {
+    background: blue;
+    border-radius: 20px;
+}
+
 .changeRelatives {
     display:flex;
     justify-content: center;
