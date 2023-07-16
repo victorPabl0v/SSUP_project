@@ -2,8 +2,8 @@
 // const colorGreen = 85;
 // const colorBlue = 171;
 // const colorAqua = 128;
-import {drawRisovalkaa} from "./scriptrus1"
-
+// import {drawRisovalkaa} from "./scriptrus"
+import {drawRisovalkaa} from "./scriptrus"
 const colorRed = [255, 0, 0];
 const colorGreen = [0, 128, 0];
 const colorBlue = [0, 0, 255];
@@ -15,7 +15,7 @@ const size = 16;
 const slNum = 9;
 const colorPointedSavedPlot = "aqua";
 const  perlParam = {
-    0: 8,   
+    0: 8,
     1: 20,
     2: 100,
     3: 100,
@@ -26,7 +26,7 @@ const  perlParam = {
     8: 5000,
 }
 const perlVal = {
-    0: 1,   
+    0: 1,
     1: 3,
     2: 1,
     3: 11,
@@ -47,7 +47,7 @@ const perlMas = {
     7: 0,
     8: 0
 };
-const valueNames = ["Octaves", "Hue octaves", "Hue speed", "Time speed", "X scale", "Y scale", "Hue scale", "X speed", "Y speed"]
+const valueNames = ["octaves", "hue_octaves", "hue_speed", "time_speed", "xscale", "yscale", "hue_scale", "x_speed", "y_speed"]
 
 const data = {
     x: 0,
@@ -92,23 +92,25 @@ function coloringPage() {
     divColPage.class = "colPage";
     pageContent.appendChild(divColPage);
     let divIzb = document.createElement("div");
-    divIzb.class = "stroka";
+    divIzb.className = "stroka";
     divIzb.id = "izb";
     divColPage.appendChild(divIzb);
     let divDisp = document.createElement("div");
-    divDisp.class = "disp";
+    divDisp.className = "disp";
     divDisp.id = "disp";
     divColPage.appendChild(divDisp);
     let divColBut1 = document.createElement("div");
-    divColBut1.class = "colBut1";
+    divColBut1.className = "colBut1";
     divColBut1.id = "colBut1";
     divColPage.appendChild(divColBut1);
     let divColBut2 = document.createElement("div");
-    divColBut2.class = "colBut2";
     divColBut2.id = "colBut2";
-    divColPage.appendChild(divColBut2);
+    divColBut2.className = "colBut1";
     let divPole = document.createElement("div");
-    divColBut2.id = "pole";
+    divPole.className = "pole";
+    divPole.id = "pole";
+    pageContent.appendChild(divPole);
+    divColPage.appendChild(divColBut2);
     let but1 = document.createElement("button");
     but1.id = "bt1";
     but1.className = "r";
@@ -147,7 +149,7 @@ function coloringPage() {
     but44.id = "bt44";
     but44.innerText = "⭐";
     divColBut2.appendChild(but44);
-    
+
 
     // console.log("aafafaf");
     // let div3 = document.createElement("div");
@@ -250,7 +252,7 @@ function KeyChecker(e) {
 function ColoringThePlot(prevX, prevY) {
     if (data.pole[prevY][prevX] === colorPointedSavedPlot) {
         data.pole[prevY][prevX] = "blue";
-    } else if (data.pole[prevY][prevX] != "blue") {
+    } else if (data.pole[prevY][prevX] !== "blue") {
         data.pole[prevY][prevX] = "green";
     }
     if (data.pole[data.y][data.x] === "blue") {
@@ -361,7 +363,6 @@ function slMode(fieldName, val) {
 
 
 let selValue = "snake";
-console.log(selValue);
 
 snakeButtons();
 evtListSnake();
@@ -370,7 +371,7 @@ document.addEventListener("keydown", checkKeyPressed, false);
 const selection = document.getElementById("changer");
 const content = document.getElementById("pageContent");
 
-changer.addEventListener("change", () => {
+selection.addEventListener("change", () => {
     selValue = selection.value;
     console.log(selValue);
     fetchAsyncToDos(url + "/ledChangeMode", { "mode": whatMode() })
@@ -379,10 +380,10 @@ changer.addEventListener("change", () => {
             content.removeChild(content.lastChild);
         }
         console.log("gwngoiw")
-        // coloringPage();
-        // data.pole[0][0] = "red";
-        // display();
+        coloringPage();
+        data.pole[0][0] = "red";
         drawRisovalkaa();
+        display();
     } else if (selValue === "snake") {
         while (content.firstChild) {
             content.removeChild(content.lastChild);
